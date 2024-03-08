@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+    db:
+        image: 'postgres:13.1-alpine'
+        container_name: db
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+        ports:
+            - 5434:5432
+        volumes:
+            - ./postgres-volume:/var/lib/postgresql/data
+            - ./src/main/resources:/docker-entrypoint-initdb.d
+
+    spring-app:
+        image: 'amazoncorretto:17'
+        container_name: spring-app
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=postgres
+        depends_on:
+            - db
+        ports:
+            - 8080:8080
+        volumes:
+            - ./demo/target:/app
+        command: sh -c "sleep 15 && java -jar /app/demo-1.0.0.jar"
+
+volumes:
+    postgres-volume:
